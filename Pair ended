@@ -1,0 +1,308 @@
+(py27) veronica@Veronicas-MacBook-Air data % trim_galore -q 25 --phred33 --illumina --
+paired --fastqc -o /Users/veronica/Desktop/Bioinfo/RNA-seq/Index 2cells_1.fastq
+2cells_2.fastq
+Multicore support not enabled. Proceeding with single-core trimming.
+Path to Cutadapt set as: 'cutadapt' (default)
+Cutadapt seems to be working fine (tested command 'cutadapt --version')
+Cutadapt version: 1.18
+single-core operation.
+Output will be written into the directory: /Users/veronica/Desktop/Bioinfo/RNA-seq/Index/
+Writing report to '/Users/veronica/Desktop/Bioinfo/RNA-seq/Index/
+2cells_1.fastq_trimming_report.txt'
+SUMMARISING RUN PARAMETERS
+==========================
+Input filename: 2cells_1.fastq
+Trimming mode: paired-end
+Trim Galore version: 0.6.7
+Cutadapt version: 1.18
+Number of cores used for trimming: 1
+Quality Phred score cutoff: 25
+Quality encoding type selected: ASCII+33
+Adapter sequence: 'AGATCGGAAGAGC' (Illumina TruSeq, Sanger iPCR; user defined)
+Maximum trimming error rate: 0.1 (default)
+Minimum required adapter overlap (stringency): 1 bp
+Minimum required sequence length for both reads before a sequence pair gets removed: 20 bp
+Running FastQC on the data once trimming has completed
+Cutadapt seems to be reasonably up-to-date. Setting -j 1
+Writing final adapter and quality trimmed output to 2cells_1_trimmed.fq
+>>> Now performing quality (cutoff '-q 25') and adapter trimming in a single pass for the
+adapter sequence: 'AGATCGGAAGAGC' from file 2cells_1.fastq <<<
+This is cutadapt 1.18 with Python 3.7.10
+Command line parameters: -j 1 -e 0.1 -q 25 -O 1 -a AGATCGGAAGAGC 2cells_1.fastq
+Processing reads on 1 core in single-end mode ...
+Finished in 11.30 s (14 us/read; 4.18 M reads/minute).
+=== Summary ===
+Total reads processed: 786,742
+Reads with adapters: 235,475 (29.9%)
+Reads written (passing filters): 786,742 (100.0%)
+Total basepairs processed: 59,792,392 bp
+Quality-trimmed: 4,677,024 bp (7.8%)
+Total written (filtered): 54,757,930 bp (91.6%)
+=== Adapter 1 ===
+Sequence: AGATCGGAAGAGC; Type: regular 3'; Length: 13; Trimmed: 235475 times.
+No. of allowed errors:
+0-9 bp: 0; 10-13 bp: 1
+Bases preceding removed adapters:
+A: 31.5%
+C: 34.5%
+G: 18.7%
+T: 15.3%
+none/other: 0.0%
+Overview of removed sequences
+length	 count	 expect	 max.err	 error counts
+1	 157873	 196685.5	0	 157873
+2	 61218	 49171.4	0	 61218
+3	 12383	 12292.8	0	 12383
+4	 2336	 3073.2	0	 2336
+5	 760	 768.3	0	 760
+6	 75	 192.1	0	 75
+7	 28	 48.0	0	 28
+8	4	 12.0	0	4
+9	 22	 3.0	0	 0 22
+10	 15	 0.8	1	 0 15
+11	6	 0.2	1	 0 6
+12	 13	 0.0	1	 5 8
+14	2	 0.0	1	2
+15	 54	 0.0	1	 53 1
+17	2	 0.0	1	2
+18	1	 0.0	1	 0 1
+19	1	 0.0	1	1
+20	1	 0.0	1	1
+21	1	 0.0	1	1
+23	4	 0.0	1	 3 1
+24	 22	 0.0	1	 22
+25	9	 0.0	1	 8 1
+26	 12	 0.0	1	 12
+27	3	 0.0	1	 0 3
+28	6	 0.0	1	6
+29	 24	 0.0	1	 22 2
+30	 10	 0.0	1	 8 2
+31	 26	 0.0	1	 26
+32	 16	 0.0	1	 13 3
+33	 51	 0.0	1	 50 1
+34	 28	 0.0	1	 28
+35	 59	 0.0	1	 59
+36	 32	 0.0	1	 29 3
+37	 132	 0.0	1	 130 2
+38	 128	 0.0	1	 127 1
+39	 65	 0.0	1	 64 1
+40	 16	 0.0	1	 0 16
+41	1	 0.0	1	1
+42	1	 0.0	1	 0 1
+43	3	 0.0	1	 2 1
+45	1	 0.0	1	1
+50	1	 0.0	1	1
+51	2	 0.0	1	 0 2
+52	3	 0.0	1	3
+53	1	 0.0	1	 0 1
+54	1	 0.0	1	1
+55	3	 0.0	1	 2 1
+56	3	 0.0	1	3
+57	2	 0.0	1	 1 1
+58	1	 0.0	1	 0 1
+59	1	 0.0	1	1
+63	2	 0.0	1	 0 2
+64	1	 0.0	1	 0 1
+67	3	 0.0	1	 0 3
+69	2	 0.0	1	 0 2
+75	2	 0.0	1	 0 2
+76	3	 0.0	1	 0 3
+RUN STATISTICS FOR INPUT FILE: 2cells_1.fastq
+=============================================
+PA G E O F
+51 5 5
+786742 sequences processed in total
+The length threshold of paired-end sequences gets evaluated later on (in the validation
+step)
+Writing report to '/Users/veronica/Desktop/Bioinfo/RNA-seq/Index/
+2cells_2.fastq_trimming_report.txt'
+SUMMARISING RUN PARAMETERS
+==========================
+Input filename: 2cells_2.fastq
+Trimming mode: paired-end
+Trim Galore version: 0.6.7
+Cutadapt version: 1.18
+Number of cores used for trimming: 1
+Quality Phred score cutoff: 25
+Quality encoding type selected: ASCII+33
+Adapter sequence: 'AGATCGGAAGAGC' (Illumina TruSeq, Sanger iPCR; user defined)
+Maximum trimming error rate: 0.1 (default)
+Minimum required adapter overlap (stringency): 1 bp
+Minimum required sequence length for both reads before a sequence pair gets removed: 20 bp
+Running FastQC on the data once trimming has completed
+Cutadapt seems to be reasonably up-to-date. Setting -j -j 1
+Writing final adapter and quality trimmed output to 2cells_2_trimmed.fq
+>>> Now performing quality (cutoff '-q 25') and adapter trimming in a single pass for the
+adapter sequence: 'AGATCGGAAGAGC' from file 2cells_2.fastq <<<
+This is cutadapt 1.18 with Python 3.7.10
+Command line parameters: -j 1 -e 0.1 -q 25 -O 1 -a AGATCGGAAGAGC 2cells_2.fastq
+Processing reads on 1 core in single-end mode ...
+Finished in 11.51 s (15 us/read; 4.10 M reads/minute).
+=== Summary ===
+Total reads processed: 786,742
+Reads with adapters: 237,949 (30.2%)
+Reads written (passing filters): 786,742 (100.0%)
+Total basepairs processed: 59,792,392 bp
+Quality-trimmed: 4,832,118 bp (8.1%)
+Total written (filtered): 54,625,785 bp (91.4%)
+=== Adapter 1 ===
+Sequence: AGATCGGAAGAGC; Type: regular 3'; Length: 13; Trimmed: 237949 times.
+No. of allowed errors:
+0-9 bp: 0; 10-13 bp: 1
+Bases preceding removed adapters:
+A: 32.2%
+C: 34.1%
+G: 18.3%
+T: 15.3%
+none/other: 0.1%
+Overview of removed sequences
+length	 count	 expect	 max.err	 error counts
+1	 162453	 196685.5	0	 162453
+2	 60425	 49171.4	0	 60425
+3	 11918	 12292.8	0	 11918
+4	 2184	 3073.2	0	 2184
+5	 773	 768.3	0	 773
+6	 83	 192.1	0	 83
+PA G E O F
+5 2 5 5
+7	 19	 48.0	0	 19
+8	3	 12.0	0	3
+9	 28	 3.0	0	 1 27
+10	 20	 0.8	1	 2 18
+11	4	 0.2	1	 2 2
+12	7	 0.0	1	 0 7
+18	1	 0.0	1	 0 1
+24	1	 0.0	1	1
+26	1	 0.0	1	1
+27	1	 0.0	1	1
+28	1	 0.0	1	 0 1
+42	1	 0.0	1	 0 1
+45	5	 0.0	1	5
+48	1	 0.0	1	 0 1
+51	1	 0.0	1	 0 1
+57	 13	 0.0	1	 11 2
+58	1	 0.0	1	1
+60	1	 0.0	1	 0 1
+62	4	 0.0	1	4
+RUN STATISTICS FOR INPUT FILE: 2cells_2.fastq
+=============================================
+786742 sequences processed in total
+The length threshold of paired-end sequences gets evaluated later on (in the validation
+step)
+Validate paired-end files 2cells_1_trimmed.fq and 2cells_2_trimmed.fq
+file_1: 2cells_1_trimmed.fq, file_2: 2cells_2_trimmed.fq
+>>>>> Now validing the length of the 2 paired-end infiles: 2cells_1_trimmed.fq and
+2cells_2_trimmed.fq <<<<<
+Writing validated paired-end Read 1 reads to 2cells_1_val_1.fq
+Writing validated paired-end Read 2 reads to 2cells_2_val_2.fq
+Total number of sequences analysed: 786742
+Number of sequence pairs removed because at least one read was shorter than the length
+cutoff (20 bp): 28250 (3.59%)
+>>> Now running FastQC on the validated data 2cells_1_val_1.fq<<<
+Started analysis of 2cells_1_val_1.fq
+Approx 5% complete for 2cells_1_val_1.fq
+Approx 10% complete for 2cells_1_val_1.fq
+Approx 15% complete for 2cells_1_val_1.fq
+Approx 20% complete for 2cells_1_val_1.fq
+Approx 25% complete for 2cells_1_val_1.fq
+Approx 30% complete for 2cells_1_val_1.fq
+Approx 35% complete for 2cells_1_val_1.fq
+Approx 40% complete for 2cells_1_val_1.fq
+Approx 45% complete for 2cells_1_val_1.fq
+Approx 50% complete for 2cells_1_val_1.fq
+Approx 55% complete for 2cells_1_val_1.fq
+Approx 60% complete for 2cells_1_val_1.fq
+Approx 65% complete for 2cells_1_val_1.fq
+Approx 70% complete for 2cells_1_val_1.fq
+Approx 75% complete for 2cells_1_val_1.fq
+Approx 80% complete for 2cells_1_val_1.fq
+Approx 85% complete for 2cells_1_val_1.fq
+Approx 90% complete for 2cells_1_val_1.fq
+Approx 95% complete for 2cells_1_val_1.fq
+Analysis complete for 2cells_1_val_1.fq
+PA G E O F
+5 3 5 5
+>>> Now running FastQC on the validated data 2cells_2_val_2.fq<<<
+Started analysis of 2cells_2_val_2.fq
+Approx 5% complete for 2cells_2_val_2.fq
+Approx 10% complete for 2cells_2_val_2.fq
+Approx 15% complete for 2cells_2_val_2.fq
+Approx 20% complete for 2cells_2_val_2.fq
+Approx 25% complete for 2cells_2_val_2.fq
+Approx 30% complete for 2cells_2_val_2.fq
+Approx 35% complete for 2cells_2_val_2.fq
+Approx 40% complete for 2cells_2_val_2.fq
+Approx 45% complete for 2cells_2_val_2.fq
+Approx 50% complete for 2cells_2_val_2.fq
+Approx 55% complete for 2cells_2_val_2.fq
+Approx 60% complete for 2cells_2_val_2.fq
+Approx 65% complete for 2cells_2_val_2.fq
+Approx 70% complete for 2cells_2_val_2.fq
+Approx 75% complete for 2cells_2_val_2.fq
+Approx 80% complete for 2cells_2_val_2.fq
+Approx 85% complete for 2cells_2_val_2.fq
+Approx 90% complete for 2cells_2_val_2.fq
+Approx 95% complete for 2cells_2_val_2.fq
+Analysis complete for 2cells_2_val_2.fq
+Deleting both intermediate output files 2cells_1_trimmed.fq and 2cells_2_trimmed.fq
+===========================================================================================
+=========
+(myenv) veronica@Veronicas-MacBook-Air Index % bowtie2 -q --phred33 -p 2 -x /Users/
+Veronica/Desktop/Bioinfo/RNA-seq/Index/Danio_rerio -1 2cells_1_val_1.fq -2
+2cells_2_val_2.fq -S 2cells.sam
+758492 reads; of these:
+758492 (100.00%) were paired; of these:
+403552 (53.20%) aligned concordantly 0 times
+316846 (41.77%) aligned concordantly exactly 1 time
+38094 (5.02%) aligned concordantly >1 times
+----
+403552 pairs aligned concordantly 0 times; of these:
+180437 (44.71%) aligned discordantly 1 time
+----
+223115 pairs aligned 0 times concordantly or discordantly; of these:
+446230 mates make up the pairs; of these:
+234373 (52.52%) aligned 0 times
+167109 (37.45%) aligned exactly 1 time
+44748 (10.03%) aligned >1 times
+84.55% overall alignment rate
+#Transformar para comprimir e indexar
+(py27) veronica@Veronicas-MacBook-Air Index % samtools view -bSo 2cells.bam 2cells.sam
+(py27) veronica@Veronicas-MacBook-Air Index % samtools sort 2cells.bam -o sort_2cells.bam
+(py27) veronica@Veronicas-MacBook-Air Index % samtools index sort_2cells.bam
+(base)veronica@Veronicas-MacBook-Air Index % htseq-count -s no -a 10 -f bam sort_2cells.bam
+/Users/Veronica/Desktop/Bioinfo/RNA-seq/annotation/Danio_rerio.Zv9.66.gtf >
+count_sort_2cells.txt
+27195 GFF lines processed.
+Warning: Read ERR022484.20693150 claims to have an aligned mate which could not be found in
+an adjacent line.
+100000 alignment record pairs processed.
+200000 alignment record pairs processed.
+300000 alignment record pairs processed.
+400000 alignment record pairs processed.
+PA G E O F
+5 4 5 5
+500000 alignment record pairs processed.
+600000 alignment record pairs processed.
+700000 alignment record pairs processed.
+800000 alignment record pairs processed.
+900000 alignment record pairs processed.
+1000000 alignment record pairs processed.
+1100000 alignment record pairs processed.
+1200000 alignment record pairs processed.
+1300000 alignment record pairs processed.
+Warning: 1177687 reads with missing mate encountered.
+1382846 alignment record pairs processed.
+(base) veronica@Veronicas-MacBook-Air Index % cat count_sort_2cells.txt
+ENSDARG00000000068	 519
+ENSDARG00000000935	 362
+ENSDARG00000001498	 12
+…
+ENSDARG00000095891	 53
+ENSDARG00000095947	 128
+__no_feature	 91524
+__ambiguous	 1711
+__too_low_aQual	 113772
+__not_aligned	 739990
+__alignment_not_unique	0
+PA G E O F
+5 5 5 5
