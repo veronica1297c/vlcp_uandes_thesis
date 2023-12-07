@@ -1,0 +1,164 @@
+---
+title: "DEseq2"
+author: "Verónica Castañeda"
+date: "2023-07-22"
+output: html_document
+---
+
+```{r}
+#Install packages
+
+library(DESeq2)
+library(pheatmap)
+library(RColorBrewer)
+library(dplyr)
+library(ggplot2)
+library(ggrepel)
+library(EnhancedVolcano)
+```
+
+```{r message=TRUE, warning=TRUE}
+#build the dds object to analyze with DESEq
+# Read the CSV files into data frames
+data <- read.csv2("input1.csv",
+                  header = TRUE, sep = ",", quote = "\"", dec = ".",
+                 row.names = 1)
+head(data)
+```
+
+```{r}
+#DATA TRAITS INPUT
+
+# Assuming you have a metadata table with columns "Sample" and "Condition"
+
+metadata <- read.csv("clinical.csv", header = TRUE, nrows = nrow_n)
+head(metadata)
+ncol(metadata)
+nrow(metadata)
+
+```
+
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = data,
+                              colData = metadata,
+                              design = ~ factor(Condition))
+dds
+
+dds <- DESeq(dds)
+
+#Take a look at the results table
+res <- results(dds)
+head(results(dds, tidy = TRUE)) 
+
+#Summary of differential gene expression
+summary(res) 
+
+#Sort summary list by p-value
+res <- res[order(res$padj), ]
+head(res)
+
+# Save as a .csv file
+write.csv(res, file = "dds.csv", row.names = TRUE)
+
+#Graph individual genes to compare between groups
+par(mfrow = c(2, 3))
+plotCounts(dds, gene = "ENSG00000152583", intgroup = "status")
+```
+```{r}
+# Make a basic volcano plot
+#reset par
+par(mfrow = c(1, 1))'
+
+# generate the basic volcano plot
+with(res, plot(log2FoldChange, -log2(pvalue),
+               pch = 20,
+               main = "Volcano plot",
+               xlim = c(-12, 12)))
+
+# Add colored points: blue if padj<0.01, red if log2FC > 1 and padj < 0.05)
+with(subset(res, padj < .05),
+     points(log2FoldChange,
+            -log10(pvalue),
+            pch = 20,
+            col = "blue"))
+with(subset(res, padj<.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(pvalue), pch = 20, col = "red"))
+
+# Adjust width and height as needed
+png("Volcano_plot.png", width = 1800, height = 1600, res = 300)
+
+dev.off()   # Close the PNG graphics device and save the plot
+```
+
+```{r}
+#Generate a volcano plot using the full results either by uploading the .csv file again
+# Define genes of interest to label in the plot
+df1 <- read.csv("dds.csv", header = TRUE, sep = ",", dec = ".")
+toptable <- as.data.frame(df1)
+list <- c("gene1", "gene2", "gene3", "gene4", "gene5",
+          "gene6", "gene6", "gene7", "gene8", "gene9")
+
+volcano_plot2 <- EnhancedVolcano(
+                                 toptable,
+                                 x = "log2FoldChange",
+                                 y = "pvalue",
+                                 xlim = c(-0.75, 0.75),
+                                 ylim = c(1, 5),
+                                 lab = (toptable$gene),
+                                 selectLab = list,
+                                 pointSize = 1.0,
+                                 labSize = 4.0,
+                                 drawConnectors = TRUE,
+                                 pCutoff = 0.05,
+                                 FCcutoff = 0.2,
+                                 max.overlaps = Inf)
+
+png("volcano_plot_labeled.png", width = 1800, height = 1600, res = 300)
+dev.off()
+```
+
+```{r}
+#Make a Principal Components Analysis plot
+
+#vst function will perform variance stabilizing transformation
+vsdata <- vst(dds)
+
+# Generate the plot
+plotPCA(vsdata,
+        intgroup = "Condition") 
+
+# Adjust width and height as needed
+png("PCA_condition.png", width = 1800, height = 1600,res = 300)  
+
+# Replace x and y with your data and plotting commands
+plot(plotPCA(vsdata, intgroup = "Condition"))  
+
+# Close the PNG graphics device and save the plot
+dev.off()   
+```
+
+```{r}
+#Labeling PCA plots
+## now recapture the last plot in a variable
+z <-plotPCA(vsdata, intgroup = "Condition")
+
+#using the DESEQ2 plotPCA fxn we can
+## replot, obscuring points with the sample name
+z + geom_label(aes(label = name))
+
+## or 'nudge' the points up a bit
+ nudge <- position_nudge(x = 10, y = 1)
+z + geom_label(aes(label = name), position = nudge)
+
+## different label without the box action
+z + geom_text(aes(label = name), position = nudge)
+
+# Adjust width and height as needed
+png("PCA_condition.png", width = 1800, height = 1600,res=300)  
+
+# Replace x and y with your data and plotting commands
+plot(plotPCA(vsdata, intgroup="Sex"))  
+
+# Close the PNG graphics device and save the plot
+dev.off()   
+```
