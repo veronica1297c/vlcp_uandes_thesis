@@ -3,20 +3,13 @@
 #  Code chunk 1
 #
 #=====================================================================================
-# Load the WGCNA package
 
+# Load the WGCNA package
 library(WGCNA)
 
-#Read in the Input1
-#This input needs to be a .csv with expression containing decimals
-#The Input1.csv must look like this:
-#$gene_symbol: chr "ENS..." "ENS..."
-#$sample1    :num 151,00 23,00 5,00
-Data = read.csv("input1.csv",header=TRUE)
+#Set working directory
+setwd("/Users/veronicacastaneda/Documents/WGNCA1/Test")
 
-# Take a quick look at what is in the data set:
-dim(Data)
-names(Data)
 print("1 done")
 
 #=====================================================================================
@@ -25,13 +18,14 @@ print("1 done")
 #
 #=====================================================================================
 
-datExpr0 = as.data.frame(t(Data[, -1]))
-names(datExpr0) = Data$genes
-rownames(datExpr0) = names(Data)[-1]
-
-dim(Data)
-names(Data)
-
+#Input1 is the normalized gene expression data as a csv file
+#The Input1.csv must look like this:
+#$gene_symbol: chr "ENS..." "ENS..."
+#$sample1    :num 151,00 23,00 5,00
+data_expr_0 <- read.csv("input1.csv", header = TRUE, row.names = 1)
+# Take a quick look at what is in the data set:
+dim(data_expr_0)
+names(data_expr_0)
 print("2 done")
 #=====================================================================================
 #
@@ -39,44 +33,52 @@ print("2 done")
 #
 #=====================================================================================
 
-#Iterative filtering of samples and genes with too many missing entries
-gsg = goodSamplesGenes(datExpr0, verbose = 3);
+gsg <- goodSamplesGenes(data_expr_0, verbose = 10)
 gsg$allOK
 print("3 done")
+
 #=====================================================================================
 #
 #  Code chunk 4
 #
 #=====================================================================================
 
-if (!gsg$allOK)
-{
-  # Optionally, print the gene and sample names that were removed:
-  if (sum(!gsg$goodGenes)>0)
-   printFlush(paste("Removing genes:", paste(names(datExpr0)[!gsg$goodGenes], collapse = ", ")));
- if (sum(!gsg$goodSamples)>0)
-    printFlush(paste("Removing samples:", paste(rownames(datExpr0)[!gsg$goodSamples], collapse = ", ")));
+
+if (!gsg$allOK) {
+  if (sum(!gsg$goodGenes) > 0)
+    # Optionally, print the gene and sample names that were removed:
+    printFlush(paste("Removing genes:",
+                     paste(rownames(data_expr_0)[!gsg$goodGenes],
+                           collapse = ", ")))
+  if (sum(!gsg$goodSamples) > 0)
+    printFlush(paste("Removing samples:",
+                     paste(colnames(data_expr_0)[!gsg$goodSamples],
+                           collapse = ", ")))
   # Remove the offending genes and samples from the data:
-  datExpr0 = datExpr0[gsg$goodSamples, gsg$goodGenes]
+  data_expr <- data_expr_0[gsg$goodSamples, gsg$goodGenes]
 }
 print("4 done")
 
-
+n_genes <- ncol(data_expr)
+n_samples <- nrow(data_expr)
+print(n_genes)
+print(n_samples)
 #=====================================================================================
 #
 #  Code chunk 5
 #
 #=====================================================================================
 
-
-sampleTree = hclust(dist(datExpr0), method = "average");
 # Plot the sample tree: Open a graphic output window of size 12 by 9 inches
 # The user should change the dimensions if the window is too large or too small.
-sizeGrWindow(12,9)
-#pdf(file = "sampleClustering.pdf", width = 12, height = 9);
-par(cex = 0.6);
-par(mar = c(0,4,2,0))
-plot(sampleTree, main = "Sample clustering to detect outliers", sub="", xlab="", cex.lab = 1.5,
+#For this plot, data is transposed using the t() function
+sample_tree <- hclust(dist(t(data_expr)), method = "average")
+
+sizeGrWindow(12, 9)
+par(cex = 0.6)
+par(mar = c(0, 4, 2, 0))
+plot(sample_tree, main = "Sample clustering to detect outliers",
+     sub = "", xlab = "", cex.lab = 1.5,
      cex.axis = 1.5, cex.main = 2)
 print("5 done")
 
@@ -88,76 +90,83 @@ print("5 done")
 
 
 # Plot a line to show the cut
-abline(h = 4000000, col = "red");
+abline(h = 7e+06, col = "red")
 # Determine cluster under the line
 
 #If you want to remove the furthest samples
-#clust = cutreeStatic(sampleTree, cutHeight = 4000000, minSize = 10)
-#table(clust)
+clust <- cutreeStatic(sample_tree, cutHeight = 7e+06, minSize = 10)
+table(clust)
 
 #If you cannot to remove the furthest samples
-clust=1
+clust == 1
 
 # clust 1 contains the samples we want to keep.
-keepSamples = (clust==1)
-datExpr = datExpr0[keepSamples, ]
-nGenes = ncol(datExpr)
-nSamples = nrow(datExpr)
-print("6 done")
+#Data matrix is transposed in this step
+keep_samples <- (clust)
+t_data <- t(data_expr)
+data_expr_1 <- t_data[keep_samples, ]
+n_genes <- ncol(data_expr_1)
+n_samples <- nrow(data_expr_1)
 
-#=====================================================================================
+print(n_genes)
+print(n_samples)
+
+head(data_expr_1)
+print("6 done")
+#=====================================================================
 #
 #  Code chunk 7
 #
-#=====================================================================================
+#=====================================================================
 
-# 
-traitData = read.csv("ClinicalTraits.csv");
-dim(traitData)
-names(traitData)
-# 
-# # remove columns that hold information we do not need.
-allTraits = traitData;
-allTraits = traitData;
-dim(allTraits)
-names(allTraits)
-# 
-# # Form a data frame analogous to expression data that will hold the clinical traits.
-# 
-femaleSamples = rownames(datExpr0);
- traitRows = match(femaleSamples, allTraits$Sample);
- datTraits = allTraits[traitRows, -1];
- rownames(datTraits) = allTraits[traitRows, 1];
+# Input clinical data
+trait_data <- read.csv("ClinicalTraits.csv")
+dim(trait_data)
+names(trait_data)
 
-dim(datTraits)
-names(datTraits)
-# 
- collectGarbage();
- print("7 done")
-# 
-# #=====================================================================================
-# #
-# #  Code chunk 8
-# #
-# #=====================================================================================
-# 
-# 
+# Remove columns that hold information we do not need.
+all_traits <- trait_data
+all_traits <- trait_data
+dim(all_traits)
+names(all_traits)
+
+# Data frame analogous to expression data that will hold the clinical traits.
+samples <- rownames(data_expr_1)
+print(samples)
+
+trait_rows <- match(samples, all_traits$Sample)
+data_traits <- all_traits[trait_rows, -1]
+rownames(data_traits) <- all_traits[trait_rows, 1]
+
+dim(data_traits)
+names(data_traits)
+
+collectGarbage()
+print("7 done")
+
+#=====================================================================
+#
+#   Code chunk 8
+#
+#=====================================================================
+
 
 # Re-cluster samples
-sampleTree2 = hclust(dist(datExpr), method = "average")
-# Convert traits to a color representation: white means low, red means high, grey means missing entry
-traitColors = numbers2colors(datTraits, signed = FALSE);
+sample_tree2 <- hclust(dist(data_expr_1), method = "average")
+# Convert traits to a color representation:
+#white means low, red means high, grey means missing entry
+trait_colors <- numbers2colors(data_traits, signed = FALSE)
 # Plot the sample dendrogram and the colors underneath.
-plotDendroAndColors(sampleTree2, traitColors,
-                    groupLabels = names(datTraits), 
+plotDendroAndColors(sample_tree2, trait_colors,
+                    groupLabels = names(data_traits),
                     main = "Sample dendrogram and trait heatmap")
 
-#=====================================================================================
+#=====================================================================
 #
 #  Code chunk 9
 #
-#=====================================================================================
+#=====================================================================
+#Save results
 
-
-save(datExpr, datTraits, file = "Input2.RData")
+save(data_expr_1, data_traits, file = "Input2.RData")
 print("9 done")
