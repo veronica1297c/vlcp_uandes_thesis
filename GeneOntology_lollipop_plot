@@ -1,0 +1,535 @@
+
+a
+```{r}
+#Install packages using ("BiocManager") if needed
+
+BiocManager::install("GO.db")
+BiocManager::install("org.Hs.eg.db")
+BiocManager::install("GOstats")
+BiocManager::install("goProfiles")
+BiocManager::install("topGO")
+BiocManager::install("clusterProfiler")
+BiocManager::install("Rgraphviz")
+BiocManager::ainstall("biomaRt")
+BiocManager::install("GO.db")
+BiocManager::install("GOstats")
+BiocManager::install("goProfiles")
+BiocManager::install("topGO")
+BiocManager::install("clusterProfiler")
+BiocManager::install("Rgraphviz")
+install.packages('GOplot')
+install.packages("DESeq2")
+install.packages("ComplexHeatmap")
+```
+
+```{r}
+#Load packages
+
+library("biomaRt")
+library("org.Hs.eg.db")
+library("GO.db")
+library("GOstats")
+library("goProfiles")
+library("topGO")
+library("clusterProfiler")
+library("Rgraphviz")
+library("ggplot2")
+library("dplyr")
+library("stringr")
+library("forcats")
+library("ggthemes")
+library("RColorBrewer")
+library("ggpubr")
+library("ggtext")
+library("readr")
+library("GOplot")
+library("DESeq2")
+library("ComplexHeatmap")
+```
+
+```{bash}
+pwd
+cd /Users/veronicacastaneda/Downloads/nasa_final/JE
+ls
+```
+
+```{r}
+#Import your human gene list (labeled using hgnc_symbol) to analyse ->"GO_input.txt"
+#obtain the entrezgene_id that matches the hgnc_symbol
+setwd("/Users/veronicacastaneda/Downloads/nasa_final/Aging/GSE85358_skin")
+
+my_genes <- read.table("FC<0.9.txt")
+print(my_genes)
+
+human = useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")  
+ensembl <- useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
+human_list <- getBM(attributes = c("entrezgene_id", "hgnc_symbol","ensembl_gene_id"), filters = "ensembl_gene_id_version", values = my_genes, mart = ensembl, verbose = 5 )
+write.table(human_list, file = "my_genes_down.txt", quote = FALSE, sep = "\t", append = FALSE)
+attributes <- listAttributes(ensembl)
+
+filters <- listFilters(mart = ensembl)
+
+filters <- listAttributes(mart = ensembl)
+```
+
+```{bash}
+# Obtain only the "entrezgene_id"  from your previous file as a file named my_genes_cut.txt
+cd /Users/veronicacastaneda/Downloads/nasa_final/Aging/
+cut -f2 my_genes_down.txt|grep -vwE "NA"|awk '{if (NR!=1) {print}}'> my_genes_cut_down.txt
+```
+
+```{r}
+####GOstat
+setwd("/Users/veronicacastaneda/Downloads/nasa_final/Aging")
+
+genes <- read.table("my_genes_cut_down.txt")
+genes2 <-as.character(genes$V1)
+genes_to_gov <- as.vector(genes2)
+
+
+entrez_object <- org.Hs.egGO
+mapped_genes <- mappedkeys(entrez_object)
+universe <- mapped_genes
+
+```
+
+
+```{bash}
+#know the location of the files
+#copy this result then paste "BP_GO_input.csv" to the end of this file
+#you will later use this to write a .csv file for the plots
+pwd
+```
+
+
+```{r}
+#Run GeneOntology for Biological Processes
+setwd("/Users/veronicacastaneda/Downloads/nasa_final/Aging")
+
+#Define the cutoff here
+hgCutoff <- 0.01
+
+params <- new("GOHyperGParams",
+              geneIds = genes_to_gov,
+              universeGeneIds = universe,
+              annotation = "org.Hs.eg.db",
+              ontology = "BP",
+              pvalueCutoff = hgCutoff,
+              conditional = FALSE,
+              testDirection = "over")
+hgOverBP <- hyperGTest(params)
+hgOverBP
+
+#Results as text
+BP_result <- summary(hgOverBP)
+head(BP_result,50)
+write.table(BP_result, quote = FALSE, "BP_GO_input_all.txt", sep = '\t' )
+htmlReport(hgOverBP, file = "BP_GO_input_all.html")
+
+```
+
+```{r message=TRUE, warning=TRUE}
+#Results as Lollipop plot
+setwd("/Users/veronicacastaneda/Downloads/nasa_final/Aging")
+
+GSEA_Hallmark_new <- read.delim("BP_GO_input_all.txt",header=TRUE,sep = "\t",quote = "\"",dec = ".", fill=TRUE)
+
+dGSEA_Hallmark <- ggplot(GSEA_Hallmark_new, aes(x = (-log10(Pvalue)) , y = fct_reorder(Term, (-log10(Pvalue))    )) ) +
+    geom_point(aes(size = (Count/Size), color = (-log10(Pvalue)))) +            
+  geom_segment(aes( x = 0, xend = -log10(Pvalue), y = Term, yend = Term, color = (-log10(Pvalue))  )
+               , size = 1.0
+               ) +
+  theme_bw(base_size = 7) +
+  scale_color_gradient2(low = "white", mid = "navy", high="firebrick3", midpoint = 0) +
+  scale_size(range = c(3,8), name = "Fold Enrichment") +
+  ylab(NULL) +
+  geom_vline(xintercept = 0, col = "black") +
+  guides(shape = guide_legend(override.aes = list(size = 10))) +
+  labs(title = "Biological Processes"
+       
+       #Set cutoff value as defined previously
+       ,subtitle = "P.value cutoff < 0.01") +
+  theme(strip.text = element_text(face = "bold", size = 10),
+        strip.background = element_rect(fill = "lightblue", colour = "black",size = 1)
+        ,axis.text.y = element_markdown() )
+
+tiff("BP_all.tiff", units="in", width = 10, height = 12, 
+     res=300,  compression = 'lzw')
+dev.off()
+dGSEA_Hallmark
+```
+
+```{r}
+#Run GeneOntology for Molecular Function
+setwd("/Users/veronicacastaneda/Desktop/sarc_mark")
+
+
+#Define the cutoff here
+
+hgCutoff <- 0.01
+params <- new("GOHyperGParams",
+              geneIds=genes_to_gov,
+              universeGeneIds=universe,
+              annotation="org.Hs.eg.db",
+              ontology="MF",
+              pvalueCutoff=hgCutoff,
+              conditional=FALSE,
+              testDirection="over")
+hgOverMF <- hyperGTest(params)
+hgOverMF
+
+#Results as text
+MF_result <- summary(hgOverMF)
+head(MF_result,50)
+write.table(MF_result, "MF_GO_input.txt", sep = '\t', quote = F,row.names = FALSE)
+htmlReport(hgOverBP, file = "MF_GO_input.html")
+
+#Results as lollipop plot
+
+GSEA_Hallmark_new <- read.delim("MF_GO_input.txt",header=TRUE,sep = "\t",quote = "\"",dec = ".", fill=TRUE)
+
+GSEA_Hallmark_new
+
+dGSEA_Hallmark <- ggplot(GSEA_Hallmark_new, aes(x = (-log10(Pvalue)) , y = fct_reorder(Term, (-log10(Pvalue))    )) ) +
+    geom_point(aes(size = (Count/Size), color = (-log10(Pvalue)))) +            
+  geom_segment(aes( x=0, xend=-log10(Pvalue), y=Term, yend=Term, color= (-log10(Pvalue))  ), size = 1.0) +
+  theme_bw(base_size=8) +
+  scale_color_gradient2(low="white", mid="navy", high="firebrick3", midpoint=0) +
+  scale_size(range = c(3,8), name="Fold Enrichment") +
+  ylab(NULL) +
+  geom_vline(xintercept=0, col="black") +
+  guides(shape = guide_legend(override.aes = list(size = 20))) +
+  labs(title = "Molecular Function"
+       
+       #Set cutoff value as defined previously
+       ,subtitle = "P.value cutoff < 0.01") +
+  theme(strip.text = element_text(face="bold", size=20),
+        strip.background = element_rect(fill="lightblue", colour="black",size=1)
+        ,axis.text.y = element_markdown() )
+
+tiff("MF.tiff", units="in", width = 15, height = 10, 
+     res=300,  compression = 'lzw')
+dev.off()
+dGSEA_Hallmark
+
+```
+
+```{r}
+#Run GeneOntology for Cellular Component
+
+#Define the cutoff here
+
+hgCutoff <- 0.05
+params <- new("GOHyperGParams",
+              geneIds=genes_to_gov,
+              universeGeneIds=universe,
+              annotation="org.Hs.eg.db",
+              ontology="CC",
+              pvalueCutoff=hgCutoff,
+              conditional=FALSE,
+              testDirection="over")
+hgOverCC <- hyperGTest(params)
+hgOverCC
+
+
+#Results as text
+CC_result <- summary(hgOverCC)
+head(result,50)
+write.table(CC_result, "CC_GO_input.txt", sep = '\t', quote = F)
+htmlReport(hgOverBP, file = "CC_GO_input.html")
+
+#Results as lollipop plot
+
+GSEA_Hallmark_new <- read.delim("CC_GO_input.txt",header=TRUE,sep = "\t",quote = "\"",dec = ".", fill=TRUE)
+
+GSEA_Hallmark_new
+
+dGSEA_Hallmark <- ggplot(GSEA_Hallmark_new, aes(x = (-log10(Pvalue)) , y = fct_reorder(Term, (-log10(Pvalue))    )) ) +
+    geom_point(aes(size = (Count/Size), color = (-log10(Pvalue)))) +            
+  geom_segment(aes( x=0, xend=-log10(Pvalue), y=Term, yend=Term, color= (-log10(Pvalue))  ), size = 1.2) +
+  theme_bw(base_size=10) +
+  scale_color_gradient2(low="white", mid="navy", high="firebrick3", midpoint=0) +
+  scale_size(range = c(3,8), name="Fold Enrichment") +
+  ylab(NULL) +
+  geom_vline(xintercept=0, col="black") +
+  guides(shape = guide_legend(override.aes = list(size = 10))) +
+  labs(title = "Cellular Component"
+       
+       #Set cutoff value as defined previously
+       ,subtitle = "P.value cutoff < 0.05") +
+  theme(strip.text = element_text(face="bold", size=20),
+        strip.background = element_rect(fill="lightblue", colour="black",size=1)
+        ,axis.text.y = element_markdown() )
+
+tiff("CC.tiff", units="in", width = 15, height = 10, 
+     res=300,  compression = 'lzw')
+dev.off()
+dGSEA_Hallmark
+
+```
+
+```{r}
+#Run GeneOntology for KEGG
+
+#Define the cutoff here
+
+hgCutoff <- 0.05
+params2 <- new("KEGGHyperGParams",
+               geneIds=genes_to_gov,
+               universeGeneIds=universe,
+               annotation="org.Hs.eg.db",
+               pvalueCutoff=hgCutoff,
+               categoryName="KEGG",
+               testDirection="over")
+hgOverKG <- hyperGTest(params2)
+hgOverKG
+
+#Results as text
+result2 <- summary(hgOverKG)
+head(result2,50)
+write.table(summary(hgOverKG), "KEGG_GO_input.txt", sep = '\t', quote = F)
+
+#Results as lollipop plot
+
+
+GSEA_Hallmark_new <- read.csv("KEGG_GO_input.txt")
+GSEA_Hallmark_new
+
+
+dGSEA_Hallmark <- ggplot(GSEA_Hallmark_new, aes(x = (-log10(Pvalue)) , y = fct_reorder(Term, (-log10(Pvalue))    )) ) +
+    geom_point(aes(size = (Count/Size), color = (-log10(Pvalue)))) +            
+  geom_segment(aes( x=0, xend=-log10(Pvalue), y=Term, yend=Term, color= (-log10(Pvalue))  ), size = 1.2) +
+  theme_bw(base_size=20) +
+  scale_color_gradient2(low="white", mid="navy", high="firebrick3", midpoint=0) +
+  scale_size(range = c(3,8), name="Fold Enrichment") +
+  ylab(NULL) +
+  geom_vline(xintercept=0, col="black") +
+  guides(shape = guide_legend(override.aes = list(size = 10))) +
+  labs(title = "KEGG"
+       
+       #Set cutoff value as defined previously
+       ,subtitle = "P.value cutoff < 0.05") +
+  theme(strip.text = element_text(face="bold", size=20),
+        strip.background = element_rect(fill="lightblue", colour="black",size=1)
+        ,axis.text.y = element_markdown() )
+
+tiff("KEGG.tiff", units="in", width = 15, height = 10, 
+     res=300,  compression = 'lzw')
+dev.off()
+dGSEA_Hallmark
+```
+
+
+```{bash}
+# Obtain only the "entrezgene_id"  from your previous file as a file named my_genes_cut.txt
+cut -f2 BP_GO_input.txt|grep -vwE "NA"|awk '{if (NR!=1) {print}}'> BP_GO_input2.txt
+cut -f2 MF_GO_input.txt|grep -vwE "NA"|awk '{if (NR!=1) {print}}'> MF_GO_input2.txt
+cut -f2 CC_GO_input.txt|grep -vwE "NA"|awk '{if (NR!=1) {print}}'> CC_GO_input2.txt
+```
+
+```{r}
+setwd("/Users/veronicacastaneda/Desktop/sarc_mark")
+
+
+####GOstat
+genes <- read.table("my_genes_cut.txt")
+genes2 <-as.character(genes$V1)
+genes_to_gov <- as.vector(genes2)
+
+
+entrez_object <- org.Hs.egGO
+mapped_genes <- mappedkeys(entrez_object)
+universe <- mapped_genes
+
+#setear parametros de GO para Biological Process
+hgCutoff <- 0.01
+params <- new("GOHyperGParams",
+              geneIds=genes_to_gov,
+              universeGeneIds=universe,
+              annotation="org.Hs.eg.db",
+              ontology="BP",
+              pvalueCutoff=hgCutoff,
+              conditional=FALSE,
+              testDirection="over")
+hgOverBP <- hyperGTest(params)
+hgOverBP
+gen <- geneIdUniverse(hgOverBP)
+
+#GOlinesBP<- read.delim("BP_GO_input.txt", header = TRUE,sep = "",quote = "")
+m2<-c()
+ensembl = useMart("ensembl", dataset="hsapiens_gene_ensembl")
+
+
+GOlinesBP<-BP_result
+
+for (GOBPID in rownames(GOlinesBP)) 
+  {
+  GOBPIDname <- toString(GOlinesBP[GOBPID,1])
+  print(GOBPIDname)
+  
+  allgos <- gen[[GOBPIDname]]
+
+sum(geneIds(hgOverBP) %in% allgos)
+mygos <- geneIds(hgOverBP)[geneIds(hgOverBP) %in% allgos]
+head(mygos)
+
+ac3 <- getBM( attributes=c("hgnc_symbol", "entrezgene_id") , filters="entrezgene_id", values = mygos , mart = ensembl)
+
+write.table(ac3, 'BPgenes.txt', sep = '\t', quote = TRUE)
+
+gogenes<- read.delim("BPgenes.txt", header = TRUE,sep = "")
+
+BPgenes<-toString(paste0("'", gogenes$"hgnc_symbol", "'"))
+print(BPgenes)
+
+m1<-matrix(c(GOBPIDname, BPgenes),ncol=2,byrow=TRUE)
+
+m2<-(rbind(m2,m1,deparse.level = 1))
+
+}
+
+
+BP_result1<-as.data.frame(m2)
+colnames(BP_result1)<-c("GOBPID","genes")
+
+BP_result2 <- BP_result[,-c(3,4,5,6)]
+
+BP_result3 <- merge(BP_result1,BP_result2,by="GOBPID")
+
+
+write.csv(BP_result3, "/Users/veronicacastaneda/Desktop/sarc_mark", row.names=FALSE)
+
+
+```
+
+```{r}
+#Creat GOchord Plot
+circ<-BP_result3
+
+chord<-chord_dat(circ,genesGOch,circ$Term)
+head(chord)
+```
+
+
+```{r}
+
+setwd("/Users/veronicacastaneda/Desktop/sarc_mark")
+
+ ####GOstat
+genes <- read.table("my_genes_cut.txt")
+genes2 <-as.character(genes$V1)
+genes_to_gov <- as.vector(genes2)
+
+
+entrez_object <- org.Hs.egGO
+mapped_genes <- mappedkeys(entrez_object)
+universe <- mapped_genes
+
+#setear parametros de GO para Molecular FUnction
+hgCutoff <- 0.05
+params <- new("GOHyperGParams",
+              geneIds=genes_to_gov,
+              universeGeneIds=universe,
+              annotation="org.Hs.eg.db",
+              ontology="MF",
+              pvalueCutoff=hgCutoff,
+              conditional=FALSE,
+              testDirection="over")
+hgOverMF <- hyperGTest(params)
+hgOverMF
+gen <- geneIdUniverse(hgOverMF)
+
+#Add "GOMFID" to the top of the document
+GOlinesMF<- MF_result
+print(GOlinesMF)
+m2<-c()
+ensembl = useMart("ensembl", dataset="hsapiens_gene_ensembl")
+
+for (GOMFID in rownames(GOlinesMF)) 
+  {
+  GOMFIDname <- toString(GOlinesMF[GOMFID,1])
+  print(GOMFIDname)
+  
+  allgos <- gen[[GOMFIDname]]
+
+sum(geneIds(hgOverMF) %in% allgos)
+mygos <- geneIds(hgOverMF)[geneIds(hgOverMF) %in% allgos]
+head(mygos)
+  
+ac3 <- getBM( attributes=c("hgnc_symbol", "entrezgene_id") , filters="entrezgene_id", values = mygos , mart = ensembl)
+
+write.table(ac3, 'MFgenes.txt', sep = '\t', quote = TRUE)
+
+gogenes<- read.delim("MFgenes.txt", header = TRUE,sep = "")
+
+MFgenes<-toString(paste0("'", gogenes$"hgnc_symbol", "'"))
+print(MFgenes)
+
+m1<-matrix(c(GOMFIDname, MFgenes),ncol=2,byrow=TRUE)
+
+m2<-(rbind(m2,m1,deparse.level = 1))
+
+}
+
+
+MF_result1<-as.data.frame(m2)
+colnames(MF_result1)<-c("GOMFID","genes")
+
+MF_result2 <- MF_result[,-c(3,4,5,6)]
+
+MF_result3 <- merge(MF_result1,MF_result2,by="GOMFID")
+
+write.csv(MF_result3, "/Users/veronicacastaneda/Desktop/sarc_mark/GOMF_chord.csv", row.names=FALSE)
+
+```
+
+
+```{r}
+
+#Define GO terms of interest for Cellular Components
+
+####GOstat
+genes <- read.table("my_genes_cut.txt")
+genes2 <-as.character(genes$V1)
+genes_to_gov <- as.vector(genes2)
+
+
+entrez_object <- org.Hs.egGO
+mapped_genes <- mappedkeys(entrez_object)
+universe <- mapped_genes
+
+#setear parametros de GO para Biological Process
+hgCutoff <- 0.01
+params <- new("GOHyperGParams",
+              geneIds=genes_to_gov,
+              universeGeneIds=universe,
+              annotation="org.Hs.eg.db",
+              
+ #BP MF CC KEGG
+ 
+              ontology="MF",
+              pvalueCutoff=hgCutoff,
+              conditional=FALSE,
+              testDirection="over")
+hgOverMF <- hyperGTest(params)
+hgOverMF
+
+#for_loop de python buscar similar en R
+#append merge ojin concatenate 
+
+#leer la tabla
+#crea variable
+
+allgos <- geneIdUniverse(hgOverMF)$'GO:0000151'
+
+#guardar resultados
+#volver a cambiar variable
+
+sum(geneIds(hgOverMF) %in% allgos)
+mygos <- geneIds(hgOverMF)[geneIds(hgOverMF) %in% allgos]
+head(mygos)
+write.table(mygos, 'acme.txt', sep = '\t', quote = F)
+#guardar acme en carpeta
+# .format para que cada archivo se guarde en uno diferente
+```
+
