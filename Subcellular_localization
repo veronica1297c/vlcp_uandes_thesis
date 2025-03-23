@@ -1,0 +1,48 @@
+
+
+library(dplyr)
+library(ggpubr)
+
+# Insert variables for the first group
+
+var1 <- c(0.505,
+          0.526,
+          0.646224071,
+          0.601,
+          0.696282784)
+# Insert variables for the second group
+
+var2 <- c(0.495,
+          0.474,
+          0.353775929,
+          0.399,
+          0.303717216)
+
+#Rename the variables for each group
+my_data <- data.frame(group = rep(c("cytoplasm", "nucleus"), each = 5),
+                      variable = c(var1,  var2))
+print(my_data)
+
+#Make plot
+ggboxplot(my_data, x = "group", y = "variable",
+          color = "group", palette = c("#accaf1", "#3594e177"),
+          order = c("Cytoplasm", "Nucleus"),
+          ylab = "Proportion", xlab = "Subcellular localization")
+
+
+
+# compute the difference
+d <- with(my_data, variable[group == "cytoplasm"] - variable[group == "nucleus"])
+
+# Shapiro-Wilk normality test for the differences
+shapiro.test(d)
+
+install.packages("languageserver")
+
+
+
+
+
+
+
+
